@@ -12,18 +12,17 @@ import UIKit
 
 let MEMBER_LIST_URL = "https://my.api.mockaroo.com/members_with_avatar.json?key=44ce18f0"
 
-class 나중에생기는데이터<T> {
+class 나중에생기는데이터<T> { // = Observable
     private let task: (@escaping (T) -> Void) -> Void
     
     init(task: @escaping (@escaping (T) -> Void) -> Void) {
         self.task = task
     }
     
-    func 나중에오면(_ f: @escaping (T) -> Void) {
+    func 나중에오면(_ f: @escaping (T) -> Void) {    // = subscribe
         task(f)
     }
 }
-
 
 class ViewController: UIViewController {
     @IBOutlet var timerLabel: UILabel!
@@ -46,32 +45,40 @@ class ViewController: UIViewController {
     }
 
     
-    func downloadJson(_ url: String) -> 나중에생기는데이터<String?> {
-        return 나중에생기는데이터() { f in
+    func downloadJson(_ url: String) -> Observable<String?> {
+        return Observable.create { f in
             DispatchQueue.global().async { // 힘수 자체를 비동기로 처리
                 let url = URL(string: MEMBER_LIST_URL)!
                 let data = try! Data(contentsOf: url)
                 let json = String(data: data, encoding: .utf8)
                 DispatchQueue.main.async {
-                    f(json)
+                    f.onNext(json)
                 }
             }
+            
+            return Disposables.create()
         }
     }
     
     // MARK: SYNC
 
     @IBOutlet var activityIndicator: UIActivityIndicatorView!
-
+    
     @IBAction func onLoad() {
         editView.text = ""
         self.setVisibleWithAnimation(self.activityIndicator, true) // UI변경 -> main
         
-        let json: 나중에생기는데이터<String?> = downloadJson(MEMBER_LIST_URL)
-        
-        json.나중에오면 { json in
-            self.editView.text = json // UI변경 -> main
-            self.setVisibleWithAnimation(self.activityIndicator, false) // UI변경 -> main
-        }
+        _ = downloadJson(MEMBER_LIST_URL)
+            .subscribe { event in
+                switch event {
+                case .next(let json):
+                    self.editView.text = json // UI변경 -> main
+                    self.setVisibleWithAnimation(self.activityIndicator, false) // UI변경 -> main
+                case .completed:
+                    break
+                case .error:
+                    break
+                }
+            }
     }
 }
