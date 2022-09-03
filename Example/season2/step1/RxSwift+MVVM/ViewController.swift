@@ -32,19 +32,29 @@ class ViewController: UIViewController {
         })
     }
 
+    
+    func downloadJson(_ url: String, _ completion: @escaping (String?) -> Void) {
+        DispatchQueue.global().async { // 힘수 자체를 비동기로 처리
+            let url = URL(string: MEMBER_LIST_URL)!
+            let data = try! Data(contentsOf: url)
+            let json = String(data: data, encoding: .utf8)
+            DispatchQueue.main.async {
+                completion(json)
+            }
+        }
+    }
+    
     // MARK: SYNC
 
     @IBOutlet var activityIndicator: UIActivityIndicatorView!
 
     @IBAction func onLoad() {
         editView.text = ""
-        setVisibleWithAnimation(activityIndicator, true)
-
-        let url = URL(string: MEMBER_LIST_URL)!
-        let data = try! Data(contentsOf: url)
-        let json = String(data: data, encoding: .utf8)
-        self.editView.text = json
+        self.setVisibleWithAnimation(self.activityIndicator, true) // UI변경 -> main
         
-        self.setVisibleWithAnimation(self.activityIndicator, false)
+        downloadJson(MEMBER_LIST_URL) { json in
+            self.editView.text = json // UI변경 -> main
+            self.setVisibleWithAnimation(self.activityIndicator, false) // UI변경 -> main
+        }
     }
 }
