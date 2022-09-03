@@ -68,17 +68,23 @@ class ViewController: UIViewController {
         editView.text = ""
         self.setVisibleWithAnimation(self.activityIndicator, true) // UI변경 -> main
         
-        _ = downloadJson(MEMBER_LIST_URL)
+        let disposable = downloadJson(MEMBER_LIST_URL)
             .subscribe { event in
                 switch event {
-                case .next(let json):
+                case .next(let json):   // 데이터가 전달될 때
                     self.editView.text = json // UI변경 -> main
                     self.setVisibleWithAnimation(self.activityIndicator, false) // UI변경 -> main
-                case .completed:
+                case .completed: // 데이터가 전달되고 끝났을 때
                     break
-                case .error:
+                case .error:    // 에러가 발생했을 때(데이터가 전달되지 못했을 때)
                     break
                 }
             }
+        
+        disposable.dispose()    // 반환 안기다리고 취소할래 -> 받아오라고 시켜놓고 취소를 해서 계속 인디케이터만 돌음
     }
 }
+
+
+// func subscribe(_ on: @escaping (Event<String?>) -> Void) -> Disposable
+// Disposable을 반환
