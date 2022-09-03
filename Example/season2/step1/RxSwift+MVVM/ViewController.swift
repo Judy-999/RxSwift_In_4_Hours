@@ -46,19 +46,28 @@ class ViewController: UIViewController {
 
     // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
     func downloadJson(_ url: String) -> Observable<String?> {
-        // 어차피 데이터 하나만 보낼거고 에러도 안날거야
-        return Observable.just("Hello") // sugar api
-        
-        // 여러개 보내고 싶으면? element마다 전달
-        return Observable.from(["Hello", "World"])
-        
-//        위의 한줄이 아래 다섯줄과 같음
-//        return Observable.create { emitter in
-//            emitter.onNext("Hello")
-//            emitter.onCompleted()
-//
-//            return Disposables.create()
-//        }
+        return Observable.create { emiiter in
+            let url = URL(string: MEMBER_LIST_URL)!
+            
+            let task = URLSession.shared.dataTask(with: url) { data, _, error in
+                guard error == nil else {
+                    emiiter.onError(error!)
+                    return
+                }
+                
+                if let data = data, let json = String(data: data, encoding: .utf8) {
+                    emiiter.onNext(json)
+                }
+                
+                emiiter.onCompleted()
+            }
+                
+            task.resume()
+            
+            return Disposables.create() {
+                task.cancel()
+            }
+        }
     }
     
     // MARK: SYNC
@@ -69,9 +78,18 @@ class ViewController: UIViewController {
         editView.text = ""
         self.setVisibleWithAnimation(self.activityIndicator, true)
         
-        // onNext만 처리하고 싶어! (onCompleted, onError도 추가해서 처리할 수 있음)
+        // 2. Observable로 오는 데이터를 받아서 처리하는 방법
         _ = downloadJson(MEMBER_LIST_URL)
-            .subscribe(onNext: { print($0) })
+            .map { json in json?.count ?? 0}    // operator
+            .filter { count in count > 0 }  // operator
+            .map { String($0) } // operator
+            .observeOn(MainScheduler.instance)  // 어떤 스레드에서 처리할지 정해줄 수 있음 ==> 이렇게 데이터가 전달되는 중간에 처리해주는 sugar = operator
+            .subscribe(onNext: { json in
+//                DispatchQueue.main.async {
+                    self.editView.text = json
+                    self.setVisibleWithAnimation(self.activityIndicator, false)
+//                }
+            })
     }
 }
 
