@@ -10,7 +10,15 @@ import UIKit
 
 class MenuViewController: UIViewController {
     // MARK: - Life Cycle
-
+    
+    let menus: [Menu] = [
+        Menu(name: "튀김", price: 100, count: 0),
+        Menu(name: "튀김", price: 100, count: 0),
+        Menu(name: "튀김", price: 100, count: 0),
+        Menu(name: "튀김", price: 100, count: 0),
+        Menu(name: "튀김", price: 100, count: 0)
+    ]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -48,15 +56,16 @@ class MenuViewController: UIViewController {
 
 extension MenuViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 20
+        return menus.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MenuItemTableViewCell") as! MenuItemTableViewCell
 
-        cell.title.text = "MENU \(indexPath.row)"
-        cell.price.text = "\(indexPath.row * 100)"
-        cell.count.text = "0"
+        let menu = menus[indexPath.row]
+        cell.title.text = menu.name
+        cell.price.text = String(menu.price)
+        cell.count.text = String(menu.count)
 
         return cell
     }
