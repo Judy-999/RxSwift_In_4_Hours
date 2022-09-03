@@ -47,12 +47,13 @@ class ViewController: UIViewController {
     
     func downloadJson(_ url: String) -> Observable<String?> {
         return Observable.create { f in
-            DispatchQueue.global().async { // 힘수 자체를 비동기로 처리
+            DispatchQueue.global().async {
                 let url = URL(string: MEMBER_LIST_URL)!
                 let data = try! Data(contentsOf: url)
                 let json = String(data: data, encoding: .utf8)
                 DispatchQueue.main.async {
                     f.onNext(json)
+                    f.onCompleted()  // 끝났다고 알려주면 클로저가 끝남 -> 클로저가 들고있는 self 참조가 없어지므로 문제가 없어짐
                 }
             }
             
@@ -69,22 +70,20 @@ class ViewController: UIViewController {
         self.setVisibleWithAnimation(self.activityIndicator, true) // UI변경 -> main
         
         let disposable = downloadJson(MEMBER_LIST_URL)
-            .subscribe { event in
+            .subscribe { event in // 순환참조가 생기는 문제가 있음 -> 문제를 없게 하려면 [weak self] 아니면 클로저가 self를 캡쳐해서 레퍼런스 카운트가 증가해서 발생하는 문제이므로 클로저를 다시 없애주면 됨 -> completed, error 케이스일 때 클로저가 없어짐
                 switch event {
-                case .next(let json):   // 데이터가 전달될 때
-                    self.editView.text = json // UI변경 -> main
-                    self.setVisibleWithAnimation(self.activityIndicator, false) // UI변경 -> main
-                case .completed: // 데이터가 전달되고 끝났을 때
+                case .next(let json):
+                    self.editView.text = json
+                    self.setVisibleWithAnimation(self.activityIndicator, false) 
+                case .completed:
                     break
-                case .error:    // 에러가 발생했을 때(데이터가 전달되지 못했을 때)
+                case .error:
                     break
                 }
             }
         
-        disposable.dispose()    // 반환 안기다리고 취소할래 -> 받아오라고 시켜놓고 취소를 해서 계속 인디케이터만 돌음
+        disposable.dispose()
     }
 }
 
 
-// func subscribe(_ on: @escaping (Event<String?>) -> Void) -> Disposable
-// Disposable을 반환
