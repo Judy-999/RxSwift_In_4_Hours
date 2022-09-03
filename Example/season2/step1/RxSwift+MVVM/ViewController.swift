@@ -69,21 +69,9 @@ class ViewController: UIViewController {
         editView.text = ""
         self.setVisibleWithAnimation(self.activityIndicator, true)
         
-        // 2. Observable로 오는 데이터를 받아서 처리하는 방법
+        // onNext만 처리하고 싶어! (onCompleted, onError도 추가해서 처리할 수 있음)
         _ = downloadJson(MEMBER_LIST_URL)
-            .subscribe { event in
-                switch event {
-                case .next(let json):
-                    DispatchQueue.main.async {
-                        self.editView.text = json
-                        self.setVisibleWithAnimation(self.activityIndicator, false)
-                    }
-                case .completed:
-                    break
-                case .error:
-                    break
-                }
-            }
+            .subscribe(onNext: { print($0) })
     }
 }
 
