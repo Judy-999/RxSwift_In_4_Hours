@@ -12,6 +12,19 @@ import UIKit
 
 let MEMBER_LIST_URL = "https://my.api.mockaroo.com/members_with_avatar.json?key=44ce18f0"
 
+class 나중에생기는데이터<T> {
+    private let task: (@escaping (T) -> Void) -> Void
+    
+    init(task: @escaping (@escaping (T) -> Void) -> Void) {
+        self.task = task
+    }
+    
+    func 나중에오면(_ f: @escaping (T) -> Void) {
+        task(f)
+    }
+}
+
+
 class ViewController: UIViewController {
     @IBOutlet var timerLabel: UILabel!
     @IBOutlet var editView: UITextView!
@@ -33,13 +46,15 @@ class ViewController: UIViewController {
     }
 
     
-    func downloadJson(_ url: String, _ completion: @escaping (String?) -> Void) {
-        DispatchQueue.global().async { // 힘수 자체를 비동기로 처리
-            let url = URL(string: MEMBER_LIST_URL)!
-            let data = try! Data(contentsOf: url)
-            let json = String(data: data, encoding: .utf8)
-            DispatchQueue.main.async {
-                completion(json)
+    func downloadJson(_ url: String) -> 나중에생기는데이터<String?> {
+        return 나중에생기는데이터() { f in
+            DispatchQueue.global().async { // 힘수 자체를 비동기로 처리
+                let url = URL(string: MEMBER_LIST_URL)!
+                let data = try! Data(contentsOf: url)
+                let json = String(data: data, encoding: .utf8)
+                DispatchQueue.main.async {
+                    f(json)
+                }
             }
         }
     }
@@ -52,7 +67,9 @@ class ViewController: UIViewController {
         editView.text = ""
         self.setVisibleWithAnimation(self.activityIndicator, true) // UI변경 -> main
         
-        downloadJson(MEMBER_LIST_URL) { json in
+        let json: 나중에생기는데이터<String?> = downloadJson(MEMBER_LIST_URL)
+        
+        json.나중에오면 { json in
             self.editView.text = json // UI변경 -> main
             self.setVisibleWithAnimation(self.activityIndicator, false) // UI변경 -> main
         }
