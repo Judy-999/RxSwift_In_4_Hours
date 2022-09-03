@@ -44,8 +44,7 @@ class ViewController: UIViewController {
         })
     }
 
-    // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
-    func downloadJson(_ url: String) -> Observable<String?> {
+    func downloadJson(_ url: String) -> Observable<String> {
         return Observable.create { emiiter in
             let url = URL(string: MEMBER_LIST_URL)!
             
@@ -78,19 +77,18 @@ class ViewController: UIViewController {
         editView.text = ""
         self.setVisibleWithAnimation(self.activityIndicator, true)
         
-        // 2. Observable로 오는 데이터를 받아서 처리하는 방법
-        _ = downloadJson(MEMBER_LIST_URL)
-            .map { json in json?.count ?? 0}    // operator
-            .filter { count in count > 0 }  // operator
-            .map { String($0) } // operator
-            .observeOn(MainScheduler.instance)  // 어떤 스레드에서 처리할지 정해줄 수 있음 ==> 이렇게 데이터가 전달되는 중간에 처리해주는 sugar = operator
+        
+        let jsonObservable = downloadJson(MEMBER_LIST_URL)
+        let helloObservarble = Observable.just("Hello")
+        
+        _ = Observable.zip(jsonObservable, helloObservarble) { $1 + "\n" + $0 }
+            .observeOn(MainScheduler.instance)
             .subscribe(onNext: { json in
-//                DispatchQueue.main.async {
-                    self.editView.text = json
-                    self.setVisibleWithAnimation(self.activityIndicator, false)
-//                }
+                self.editView.text = json
+                self.setVisibleWithAnimation(self.activityIndicator, false)
+                
             })
     }
 }
 
-// 이 기본 사용법 마저도 길고 귀찮다! -> Sugar
+
