@@ -11,16 +11,15 @@ import RxSwift
 
 class MenuListViewModel {
     
-    // menuObservable 또는 itemsCount 또는 totalPrice를 subscribe 할 수 있음
+    // PublishSubject로 하면 init으로 값이 들어오고 나서 밖에서 subscribe해서 값이 변경돼야만 값을 전해줌 -> 테이블 뷰에 아무것도 안나옴
+    // 내가 구독했을 때 가장 최근의 값을 바로 받아오고 싶다? -> BehaviorSubject
+    var menuObservable = BehaviorSubject<[Menu]>(value: []) // BehaviorSubject는 초기값이 있어야 해서 빈배열을 넣어줌
     
-    // 메뉴도 밖에서 바뀔 수 있어야 하니 Observable.just(menus) 대신에 PublishSubject
-    var menuObservable = PublishSubject<[Menu]>() // Menu 배열를 받음(외부에서 받을 예정)
-    
-    lazy var itemsCount = menuObservable.map { // menuObservable를 바라보며 menuObservable가 바뀔 때마다 개수의 총합을 구함
+    lazy var itemsCount = menuObservable.map {
         $0.map { $0.count }.reduce(0, +)
     }
-    // totalPrice란건 menus의 (각 가격 * 개수)의 총합
-    lazy var totalPrice = menuObservable.map { // menuObservable가 Observable이니까 값이 바뀌면 자동으로 바뀐 값으로 계산해줌
+    
+    lazy var totalPrice = menuObservable.map {
         $0.map { $0.count * $0.price }.reduce(0, +)
     }
 
