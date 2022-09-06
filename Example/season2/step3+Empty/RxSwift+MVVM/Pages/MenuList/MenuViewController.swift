@@ -13,14 +13,19 @@ import RxSwift
 class MenuViewController: UIViewController {
     
     let viewModel = MenuListViewModel()
+    var disposeBag = DisposeBag()
     
     // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         updateUI()
         
-        itemCountLabel.text = "\(viewModel.itemsCount)"
-        totalPrice.text = viewModel.totalPrice.currencyKR()
+        viewModel.totalPrice
+            .map{ $0.currencyKR() }
+            .subscribe(onNext: {
+                self.totalPrice.text = $0
+            })
+            .disposed(by: disposeBag)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -50,13 +55,16 @@ class MenuViewController: UIViewController {
     @IBAction func onOrder(_ sender: UIButton) {
         // TODO: no selection
         // showAlert("Order Fail", "No Orders")
-        performSegue(withIdentifier: "OrderViewController", sender: nil)
-        viewModel.totalPrice += 100
+//        performSegue(withIdentifier: "OrderViewController", sender: nil)
+        
+//        viewModel.totalPrice += 100 이렇게 하나하나 해주고 UI업데이트를 직접 부르지말고 값이 변경되면 바로 바뀌면 좋겠다..!
+        
         updateUI()
     }
+    
     func updateUI() {
         itemCountLabel.text = "\(viewModel.itemsCount)"
-        totalPrice.text = viewModel.totalPrice.currencyKR()
+//        totalPrice.text = viewModel.totalPrice.currencyKR()
     }
 }
 

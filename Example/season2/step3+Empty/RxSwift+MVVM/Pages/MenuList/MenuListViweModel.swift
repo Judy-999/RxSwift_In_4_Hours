@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import RxSwift
 
 class MenuListViewModel {
     
@@ -18,6 +19,6 @@ class MenuListViewModel {
         Menu(name: "튀김", price: 100, count: 0)
     ]
     
-    let itemsCount: Int = 0
-    let totalPrice: Int = 0
+    var itemsCount: Int = 0
+    var totalPrice: Observable<Int> = Observable.just(10000) //10000원을 subscribe해서 받을 수 있는 Int 값이 됨
 }
