@@ -25,11 +25,11 @@ class MenuListViewModel {
     
     init() {
         let menus: [Menu] = [
-            Menu(name: "튀김", price: 100, count: 1),
-            Menu(name: "튀김", price: 100, count: 1),
-            Menu(name: "튀김", price: 100, count: 1),
-            Menu(name: "튀김", price: 100, count: 1),
-            Menu(name: "튀김", price: 100, count: 1)
+            Menu(id: 0, name: "튀김", price: 100, count: 1),
+            Menu(id: 1, name: "튀김", price: 100, count: 1),
+            Menu(id: 2, name: "튀김", price: 100, count: 1),
+            Menu(id: 3, name: "튀김", price: 100, count: 1),
+            Menu(id: 4, name: "튀김", price: 100, count: 1)
         ]
         
         menuObservable.onNext(menus)
@@ -39,13 +39,30 @@ class MenuListViewModel {
         menuObservable
             .map { menus in
                 menus.map {
-                    Menu(name: $0.name, price: $0.price, count: 0)
+                    Menu(id: $0.id, name: $0.name, price: $0.price, count: 0)
                 }
             }
             .take(1)
-            .subscribe(onNext: { // subscribe해서 변경한 값을 다시 넣어주기 -> 값을 넣어준다? = onNext
+            .subscribe(onNext: {
                 self.menuObservable.onNext($0)
             })
-        // subscribe는 한 번만 해놓으면 알아서 자동으로 해주는데 clear 버튼이 누를 때마다 실행할 필요(스트림을 만들 필요)가 없음 -> 한 번만 수행해라 = take(1)
+    }
+    
+    func changeCount(menu: Menu, increase: Int) {
+        menuObservable
+            .map { menus in
+                menus.map {
+                    if $0.id == menu.id {
+                        return Menu(id: $0.id, name: $0.name, price: $0.price, count: max($0.count + increase, 0)) // 0보다 작은 값이 들어가지 않도록
+                    } else {
+                        return $0
+                    }
+                }
+            }
+            .take(1)
+            .subscribe(onNext: {
+                self.menuObservable.onNext($0)
+            })
     }
 }
+
