@@ -21,6 +21,7 @@ class MenuViewController: UIViewController {
         updateUI()
         
         viewModel.totalPrice
+            .scan(0, accumulator: +) // 0부터 시작해서 새로운 값이 들어오면 + 해라
             .map{ $0.currencyKR() }
             .subscribe(onNext: {
                 self.totalPrice.text = $0
