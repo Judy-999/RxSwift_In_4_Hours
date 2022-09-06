@@ -19,6 +19,15 @@ class MenuViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // viewModel의 menus는 테이블 뷰의 데이터들과 연결해야 함
+        
+        viewModel.itemsCount.map { "\($0)" }
+            .subscribe(onNext: { // menu만 바꿔서 넣어줘도 itemCountLabel이 변경됨 
+                self.itemCountLabel.text = $0
+            })
+            .disposed(by: disposeBag)
+        
+        
         viewModel.totalPrice
             .scan(0, accumulator: +) // 0부터 시작해서 새로운 값이 들어오면 + 해라
             .map{ $0.currencyKR() }
