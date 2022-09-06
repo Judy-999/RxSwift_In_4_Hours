@@ -20,5 +20,8 @@ class MenuListViewModel {
     ]
     
     var itemsCount: Int = 0
-    var totalPrice: Observable<Int> = Observable.just(10000) //10000원을 subscribe해서 받을 수 있는 Int 값이 됨
+    var totalPrice: PublishSubject<Int> = PublishSubject()
+
+    // Subject
+    // 옵저버블처럼 값을 받을 수 있지만, 밖에서 값을 "통제"할 수도 있음
 }

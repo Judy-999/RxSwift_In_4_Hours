@@ -59,6 +59,9 @@ class MenuViewController: UIViewController {
         
 //        viewModel.totalPrice += 100 이렇게 하나하나 해주고 UI업데이트를 직접 부르지말고 값이 변경되면 바로 바뀌면 좋겠다..!
         
+        // 값을 어떻게 변경하지? 옵저버블은 값을 넘겨주는 애지 값을 받아서 주는 애가 아님
+        // 옵저버블처럼 값은 넘거주는데 밖에서 값을 컨트롤할 수는 없을까? --> Subject
+        viewModel.totalPrice.onNext(100)    // 이렇게만 해주면 누를 때마다 100을 계속 보냄(누적은 안 됨)
         updateUI()
     }
     
