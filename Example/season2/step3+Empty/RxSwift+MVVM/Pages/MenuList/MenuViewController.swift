@@ -17,6 +17,7 @@ class MenuViewController: UIViewController {
     // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        updateUI()
         
         itemCountLabel.text = "\(viewModel.itemsCount)"
         totalPrice.text = viewModel.totalPrice.currencyKR()
@@ -50,6 +51,12 @@ class MenuViewController: UIViewController {
         // TODO: no selection
         // showAlert("Order Fail", "No Orders")
         performSegue(withIdentifier: "OrderViewController", sender: nil)
+        viewModel.totalPrice += 100
+        updateUI()
+    }
+    func updateUI() {
+        itemCountLabel.text = "\(viewModel.itemsCount)"
+        totalPrice.text = viewModel.totalPrice.currencyKR()
     }
 }
 
