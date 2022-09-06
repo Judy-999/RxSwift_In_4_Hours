@@ -64,6 +64,8 @@ class MenuViewController: UIViewController {
     @IBOutlet var totalPrice: UILabel!
 
     @IBAction func onClear() {
+        // itemCount를 0으로 만들기 -> viewModel한테 시키자
+        viewModel.clearAllItemSelections()
     }
 
     @IBAction func onOrder(_ sender: UIButton) {
@@ -71,10 +73,6 @@ class MenuViewController: UIViewController {
         // showAlert("Order Fail", "No Orders")
 //        performSegue(withIdentifier: "OrderViewController", sender: nil)
         
-        // Menu 배열을 변경해서 menuObservable 넣어주기 = menuObservable이 변경 -> bind된 테이블뷰, itemcount, totalprice 변경
-        viewModel.menuObservable.onNext([
-            Menu(name: "변경한요리", price: 999, count: 1)
-        ])
-        // 데이터소스도 안쓰고, UI 업데이트 함수도 호출 안했는데 알아서 바뀜!
+
     }
 }

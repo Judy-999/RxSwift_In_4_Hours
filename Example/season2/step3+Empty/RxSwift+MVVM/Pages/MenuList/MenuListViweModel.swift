@@ -22,7 +22,6 @@ class MenuListViewModel {
     lazy var totalPrice = menuObservable.map {
         $0.map { $0.count * $0.price }.reduce(0, +)
     }
-
     
     init() {
         let menus: [Menu] = [
@@ -34,5 +33,19 @@ class MenuListViewModel {
         ]
         
         menuObservable.onNext(menus)
+    }
+    
+    func clearAllItemSelections() {
+        menuObservable
+            .map { menus in
+                menus.map {
+                    Menu(name: $0.name, price: $0.price, count: 0)
+                }
+            }
+            .take(1)
+            .subscribe(onNext: { // subscribe해서 변경한 값을 다시 넣어주기 -> 값을 넣어준다? = onNext
+                self.menuObservable.onNext($0)
+            })
+        // subscribe는 한 번만 해놓으면 알아서 자동으로 해주는데 clear 버튼이 누를 때마다 실행할 필요(스트림을 만들 필요)가 없음 -> 한 번만 수행해라 = take(1)
     }
 }
