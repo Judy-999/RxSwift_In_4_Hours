@@ -26,11 +26,11 @@ class MenuListViewModel {
     
     init() {
         let menus: [Menu] = [
-            Menu(name: "튀김", price: 100, count: 0),
-            Menu(name: "튀김", price: 100, count: 0),
-            Menu(name: "튀김", price: 100, count: 0),
-            Menu(name: "튀김", price: 100, count: 0),
-            Menu(name: "튀김", price: 100, count: 0)
+            Menu(name: "튀김", price: 100, count: 1),
+            Menu(name: "튀김", price: 100, count: 1),
+            Menu(name: "튀김", price: 100, count: 1),
+            Menu(name: "튀김", price: 100, count: 1),
+            Menu(name: "튀김", price: 100, count: 1)
         ]
         
         menuObservable.onNext(menus)
