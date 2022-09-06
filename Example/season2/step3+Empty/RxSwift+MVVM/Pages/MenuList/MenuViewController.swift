@@ -22,19 +22,19 @@ class MenuViewController: UIViewController {
         // viewModel의 menus는 테이블 뷰의 데이터들과 연결해야 함
         
         viewModel.itemsCount.map { "\($0)" }
-            .subscribe(onNext: { // menu만 바꿔서 넣어줘도 itemCountLabel이 변경됨 
-                self.itemCountLabel.text = $0
-            })
+            .observeOn(MainScheduler.instance)
+            .bind(to: itemCountLabel.rx.text)
             .disposed(by: disposeBag)
         
         
         viewModel.totalPrice
             .scan(0, accumulator: +) // 0부터 시작해서 새로운 값이 들어오면 + 해라
             .map{ $0.currencyKR() }
-            .subscribe(onNext: {    // 한 번만 subscribe 해놓으면 필요한 시점마다 UI 업데이트 할 필요없이 값이 바뀌면 onNext가 불려서 자동으로 값이 바뀜 -> updateUI()가 필요없음
-                self.totalPrice.text = $0
-            })
+            .observeOn(MainScheduler.instance)  // UI는 메인 스레드에서 변경해야 하니 메인 스레드로 명시 (menu에서 값이 넘어오기 때문에 기본은 menu를 변경한 스레드)
+            .bind(to: totalPrice.rx.text)
             .disposed(by: disposeBag)
+        
+       
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
