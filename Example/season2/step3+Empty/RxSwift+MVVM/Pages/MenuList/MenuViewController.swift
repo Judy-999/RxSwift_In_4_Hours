@@ -18,12 +18,11 @@ class MenuViewController: UIViewController {
     // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        updateUI()
         
         viewModel.totalPrice
             .scan(0, accumulator: +) // 0부터 시작해서 새로운 값이 들어오면 + 해라
             .map{ $0.currencyKR() }
-            .subscribe(onNext: {
+            .subscribe(onNext: {    // 한 번만 subscribe 해놓으면 필요한 시점마다 UI 업데이트 할 필요없이 값이 바뀌면 onNext가 불려서 자동으로 값이 바뀜 -> updateUI()가 필요없음
                 self.totalPrice.text = $0
             })
             .disposed(by: disposeBag)
@@ -63,12 +62,6 @@ class MenuViewController: UIViewController {
         // 값을 어떻게 변경하지? 옵저버블은 값을 넘겨주는 애지 값을 받아서 주는 애가 아님
         // 옵저버블처럼 값은 넘거주는데 밖에서 값을 컨트롤할 수는 없을까? --> Subject
         viewModel.totalPrice.onNext(100)    // 이렇게만 해주면 누를 때마다 100을 계속 보냄(누적은 안 됨)
-        updateUI()
-    }
-    
-    func updateUI() {
-        itemCountLabel.text = "\(viewModel.itemsCount)"
-//        totalPrice.text = viewModel.totalPrice.currencyKR()
     }
 }
 
