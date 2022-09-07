@@ -10,10 +10,8 @@ import Foundation
 import RxSwift
 
 class MenuListViewModel {
-    
-    // PublishSubject로 하면 init으로 값이 들어오고 나서 밖에서 subscribe해서 값이 변경돼야만 값을 전해줌 -> 테이블 뷰에 아무것도 안나옴
-    // 내가 구독했을 때 가장 최근의 값을 바로 받아오고 싶다? -> BehaviorSubject
-    var menuObservable = BehaviorSubject<[Menu]>(value: []) // BehaviorSubject는 초기값이 있어야 해서 빈배열을 넣어줌
+
+    var menuObservable = BehaviorSubject<[Menu]>(value: [])
     
     lazy var itemsCount = menuObservable.map {
         $0.map { $0.count }.reduce(0, +)
@@ -24,15 +22,29 @@ class MenuListViewModel {
     }
     
     init() {
-        let menus: [Menu] = [
-            Menu(id: 0, name: "튀김", price: 100, count: 1),
-            Menu(id: 1, name: "튀김", price: 100, count: 1),
-            Menu(id: 2, name: "튀김", price: 100, count: 1),
-            Menu(id: 3, name: "튀김", price: 100, count: 1),
-            Menu(id: 4, name: "튀김", price: 100, count: 1)
-        ]
-        
-        menuObservable.onNext(menus)
+        // 이제 API에서 받아와서 초기화해주기
+        _ = APIService.fetchAllMenusRx()
+            .map { data -> [MenuItem] in
+                struct Response: Decodable {
+                    let menus: [MenuItem]
+                }
+                
+                let decodedMenuItems = try! JSONDecoder().decode(Response.self, from: data) // MenuItems 배열을 디코드
+                return decodedMenuItems.menus
+            }
+            .map { menuItems -> [Menu] in
+                var menus: [Menu] = []
+                menuItems.enumerated().forEach { index, item in
+                    let menu = Menu.fromMenuItems(id: index, item: item) // MenuItem 타입을 Menu 타입으로 변경
+                    menus.append(menu)
+                }
+                return menus
+            }
+            .take(1)
+            .subscribe(onNext: {
+                self.menuObservable.onNext($0)
+            })
+            //.bind(to: menuObservable) // 이거 왜 bind로 하신거지?
     }
     
     func clearAllItemSelections() {

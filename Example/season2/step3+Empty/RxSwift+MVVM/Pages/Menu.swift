@@ -15,3 +15,9 @@ struct Menu {
     var price: Int
     var count: Int
 }
+
+extension Menu {
+    static func fromMenuItems(id: Int, item: MenuItem) -> Menu { // MenuItem 타입을 Menu 타입으로 변경해서 생성하는 함수
+        return Menu(id: id, name: item.name, price: item.price, count: 0)
+    }
+}

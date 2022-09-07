@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct MenuItem: Decodable {
+struct MenuItem: Decodable { // 서버에서 보내주는 데이터
     var name: String
     var price: Int
 }
