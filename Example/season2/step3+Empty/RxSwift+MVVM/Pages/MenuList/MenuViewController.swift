@@ -27,11 +27,6 @@ class MenuViewController: UIViewController {
                 cell.price.text = String(item.price)
                 cell.count.text = String(item.count)
                 
-                // +, - 처리를 셀에서 해줘야 함 -> viewModel한테 시키자
-                // 방법 1) 셀한테 viewmodel을 보내서 셀한테 시킴(셀이 뷰모델을 들고 있어야(알아야) 함) -> 셀이 다시 viewModel한테 시키기
-                // 방법 2) 여기서 viewmodel을 호출해서 item을 넘겨주기 -> 셀이 +,-가 눌렸다는걸 알아야 함 = 셀이 클로저를 들고 있어서 알도록
-                
-                // 방법 2) 여기서 Void인 부분을 구현해주기
                 cell.onChange = { [weak self] Increase in
                     self?.viewModel.changeCount(menu: item, increase: Increase)
                 }
@@ -39,6 +34,7 @@ class MenuViewController: UIViewController {
             .disposed(by: disposeBag)
         
         viewModel.itemsCount.map { "\($0)" }
+            .catchErrorJustReturn("") // 에러가 발생한다고 끊기지 말고 그냥 빈문자열을 내보내라 = UI는 에러난다고 스트림이 끊어져버리면 안되니 따로 처리
             .observeOn(MainScheduler.instance)
             .bind(to: itemCountLabel.rx.text)
             .disposed(by: disposeBag)
@@ -46,8 +42,8 @@ class MenuViewController: UIViewController {
         
         viewModel.totalPrice
             .map{ $0.currencyKR() }
-            .observeOn(MainScheduler.instance)
-            .bind(to: totalPrice.rx.text)
+            .asDriver(onErrorJustReturn: "")    // 에러가 발생하면 리턴할 값도 알려줌
+            .drive(totalPrice.rx.text)  // Driver는 항상 메인스레드에서 돌아감
             .disposed(by: disposeBag)
     }
 
