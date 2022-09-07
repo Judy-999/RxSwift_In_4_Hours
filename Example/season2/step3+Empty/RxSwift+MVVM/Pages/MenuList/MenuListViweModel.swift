@@ -8,10 +8,11 @@
 
 import Foundation
 import RxSwift
+import RxRelay
 
 class MenuListViewModel {
 
-    var menuObservable = BehaviorSubject<[Menu]>(value: [])
+    var menuObservable = BehaviorRelay<[Menu]>(value: [])
     
     lazy var itemsCount = menuObservable.map {
         $0.map { $0.count }.reduce(0, +)
@@ -29,20 +30,20 @@ class MenuListViewModel {
                     let menus: [MenuItem]
                 }
                 
-                let decodedMenuItems = try! JSONDecoder().decode(Response.self, from: data) // MenuItems 배열을 디코드
+                let decodedMenuItems = try! JSONDecoder().decode(Response.self, from: data)
                 return decodedMenuItems.menus
             }
             .map { menuItems -> [Menu] in
                 var menus: [Menu] = []
                 menuItems.enumerated().forEach { index, item in
-                    let menu = Menu.fromMenuItems(id: index, item: item) // MenuItem 타입을 Menu 타입으로 변경
+                    let menu = Menu.fromMenuItems(id: index, item: item)
                     menus.append(menu)
                 }
                 return menus
             }
             .take(1)
             .subscribe(onNext: {
-                self.menuObservable.onNext($0)
+                self.menuObservable.accept($0) // Relay는 에러를 무시하기 때문에 onNext로 걸러 받을 필요 없이 그냥 받아드리면 됨
             })
             //.bind(to: menuObservable) // 이거 왜 bind로 하신거지?
     }
@@ -56,7 +57,7 @@ class MenuListViewModel {
             }
             .take(1)
             .subscribe(onNext: {
-                self.menuObservable.onNext($0)
+                self.menuObservable.accept($0)
             })
     }
     
@@ -65,7 +66,7 @@ class MenuListViewModel {
             .map { menus in
                 menus.map {
                     if $0.id == menu.id {
-                        return Menu(id: $0.id, name: $0.name, price: $0.price, count: max($0.count + increase, 0)) // 0보다 작은 값이 들어가지 않도록
+                        return Menu(id: $0.id, name: $0.name, price: $0.price, count: max($0.count + increase, 0))
                     } else {
                         return $0
                     }
@@ -73,7 +74,7 @@ class MenuListViewModel {
             }
             .take(1)
             .subscribe(onNext: {
-                self.menuObservable.onNext($0)
+                self.menuObservable.accept($0)
             })
     }
 }
